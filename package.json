@@ -18,6 +18,15 @@
     "test": "make test",
     "build": "make build"
   },
+  "browser": {
+    "react": "./shims/react.js",
+    "react-dom": "./shims/react-dom.js"
+  },
+  "browserify": {
+    "transform": [
+      "envify"
+    ]
+  },
   "engines": {
     "node": ">= 0.8.x"
   },
@@ -37,6 +46,7 @@
     "LICENSE"
   ],
   "dependencies": {
+    "envify": "^3.4.1",
     "quill": "^1.0.2"
   },
   "peerDependencies": {
