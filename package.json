@@ -41,6 +41,7 @@
   "files": [
     "src/",
     "dist/",
+    "shims/",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
