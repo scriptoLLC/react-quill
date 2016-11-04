@@ -12,7 +12,7 @@ var MultiCursor = require('./custom_modules/MultiCursor');
 var FontStyle = new Parchment.Attributor.Style('size', 'font-size', { scope: Parchment.Scope.INLINE });
 var FontFamilyStyle = new Parchment.Attributor.Style('font', 'font-family', { scope: Parchment.Scope.INLINE });
 var DataElement = new Parchment.Attributor.Attribute('data-element', 'data-element', {scope: Parchment.Scope.INLINE})
-var CapsElement = new Parchment.Attributor.Attribute('data-caps', 'data-caps', {scope: Parchment.Scope.BLOCK})
+var CapsElement = new Parchment.Attributor.Attribute('data-caps', 'data-caps', {scope: Parchment.Scope.INLINE})
 
 quill.register(FontStyle, true);
 quill.register(FontFamilyStyle, true);
