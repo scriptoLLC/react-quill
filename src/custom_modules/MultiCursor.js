@@ -1,8 +1,5 @@
 const DEFAULTS = {
-  template: `<span class="ql-cursor-flag">
-               <span class="ql-cursor-name"></span>
-             </span>
-             <span class="ql-cursor-caret"></span>`,
+  template: '<span class="ql-cursor-flag"> <span class="ql-cursor-name"></span> </span> <span class="ql-cursor-caret"></span>',
   timeout: 2500
 }
 
@@ -20,7 +17,7 @@ MultiCursor.prototype.clearCursors = function () {
 
 MultiCursor.prototype.moveCursor = function (userId, index) {
   var cursor = this.cursors[userId]
-  if(cursor) {
+  if (cursor) {
     cursor.index = index
     cursor.elem.classList.remove('ql-hidden')
     clearTimeout(cursor.timer)
@@ -35,14 +32,14 @@ MultiCursor.prototype.moveCursor = function (userId, index) {
 
 MultiCursor.prototype.removeCursor = function (userId) {
   var cursor = this.cursors[userId]
-  if(cursor) {
+  if (cursor) {
     cursor.elem.parentNode.removeChild(cursor.elem)
   }
   delete this.cursors[userId]
 }
 
 MultiCursor.prototype.setCursor = function (userId, index, name, color) {
-  if(!this.cursors[userId]) {
+  if (!this.cursors[userId]) {
     var cursor = {
       userId: userId,
       index: index,
@@ -61,9 +58,9 @@ MultiCursor.prototype.shiftCursors = function (index, length, authorId = null) {
   Object.keys(this.cursors).forEach((cursorKey) => {
     var cursor = this.cursors[cursorKey]
     var shift = Math.max(length, index - cursor.index)
-    if(cursor.userId == authorId) {
+    if (cursor.userId === authorId) {
       this.moveCursor(authorId, cursor.index + shift)
-    } else if(cursor.index > index) {
+    } else if (cursor.index > index) {
       cursor.index += shift
     }
   })
@@ -93,14 +90,14 @@ MultiCursor.prototype.applyDelta = function (delta) {
       length = op.insert.length || 1
       var author = op.attributes ? op.attributes.author : null
       this.shiftCursors(index, length, author)
-    } else if(op.delete) {
-      this.shiftCursors(index, -1*op.delete, null)
-    } else if(op.retain) {
+    } else if (op.delete) {
+      this.shiftCursors(index, -1 * op.delete, null)
+    } else if (op.retain) {
       this.shiftCursors(index, 0, null)
       length = op.retain
     }
     index += length
-  });
+  })
   this.update()
 }
 
@@ -108,7 +105,6 @@ MultiCursor.prototype.buildCursor = function (name, color) {
   var cursorEl = document.createElement('span')
   cursorEl.classList.add('ql-cursor')
   cursorEl.innerHTML = this.options.template
-  var cursorFlag = cursorEl.querySelector('.ql-cursor-flag')
   var cursorName = cursorEl.querySelector('.ql-cursor-name')
   var nameTextNode = document.createTextNode(name)
   cursorName.appendChild(nameTextNode)
@@ -120,7 +116,7 @@ MultiCursor.prototype.buildCursor = function (name, color) {
 
 MultiCursor.prototype.updateCursor = function (cursor) {
   var bounds = this.quill.getBounds(cursor.index)
-  if(bounds) {
+  if (bounds) {
     cursor.elem.style.top = (bounds.top + this.quill.container.scrollTop) + 'px'
     cursor.elem.style.left = bounds.left + 'px'
     cursor.elem.style.height = bounds.height + 'px'
