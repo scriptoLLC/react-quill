@@ -1,4 +1,4 @@
-const DEFAULTS = {
+var DEFAULTS = {
   template: '<span class="ql-cursor-flag"> <span class="ql-cursor-name"></span> </span> <span class="ql-cursor-caret"></span>',
   timeout: 2500
 }
@@ -21,7 +21,7 @@ MultiCursor.prototype.moveCursor = function (userId, index) {
     cursor.index = index
     cursor.elem.classList.remove('ql-hidden')
     clearTimeout(cursor.timer)
-    cursor.timer = setTimeout(() => {
+    cursor.timer = setTimeout(function () {
       cursor.elem.classList.add('ql-hidden')
       cursor.timer = null
     }, this.options.timeout)
@@ -39,6 +39,7 @@ MultiCursor.prototype.removeCursor = function (userId) {
 }
 
 MultiCursor.prototype.setCursor = function (userId, index, name, color) {
+  var that = this
   if (!this.cursors[userId]) {
     var cursor = {
       userId: userId,
@@ -48,27 +49,29 @@ MultiCursor.prototype.setCursor = function (userId, index, name, color) {
     }
     this.cursors[userId] = cursor
   }
-  setTimeout(() => {
-    this.moveCursor(userId, index)
+  setTimeout(function () {
+    that.moveCursor(userId, index)
   }, 1)
   return this.cursors[userId]
 }
 
-MultiCursor.prototype.shiftCursors = function (index, length, authorId = null) {
-  Object.keys(this.cursors).forEach((cursorKey) => {
+MultiCursor.prototype.shiftCursors = function (index, length, authorId) {
+  authorId = authorId || null
+  var that = this
+  Object.keys(this.cursors).forEach(function (cursorKey) {
     var cursor = this.cursors[cursorKey]
     var shift = Math.max(length, index - cursor.index)
     if (cursor.userId === authorId) {
-      this.moveCursor(authorId, cursor.index + shift)
+      that.moveCursor(authorId, cursor.index + shift)
     } else if (cursor.index > index) {
       cursor.index += shift
     }
   })
 
-  // Object.values(this.cursors).forEach((cursor) => {
+  // Object.values(this.cursors).forEach(function (cursor) {
   //   var shift = Math.max(length, index - cursor.index);
   //   if(cursor.userId == authorId) {
-  //     this.moveCursor(authorId, cursor.index + shift);
+  //     that.moveCursor(authorId, cursor.index + shift);
   //   } else if(cursor.index > index) {
   //     cursor.index += shift;
   //   }
@@ -76,24 +79,26 @@ MultiCursor.prototype.shiftCursors = function (index, length, authorId = null) {
 }
 
 MultiCursor.prototype.update = function () {
-  Object.keys(this.cursors).forEach((cursorKey) => {
-    this.updateCursor(this.cursors[cursorKey])
+  var that = this
+  Object.keys(this.cursors).forEach(function (cursorKey) {
+    that.updateCursor(that.cursors[cursorKey])
   })
   // Object.values(this.cursors).forEach(this.updateCursor.bind(this));
 }
 
 MultiCursor.prototype.applyDelta = function (delta) {
   var index = 0
-  delta.ops.forEach((op) => {
+  var that = this
+  delta.ops.forEach(function (op) {
     var length = 0
     if (op.insert) {
       length = op.insert.length || 1
       var author = op.attributes ? op.attributes.author : null
-      this.shiftCursors(index, length, author)
+      that.shiftCursors(index, length, author)
     } else if (op.delete) {
-      this.shiftCursors(index, -1 * op.delete, null)
+      that.shiftCursors(index, -1 * op.delete, null)
     } else if (op.retain) {
-      this.shiftCursors(index, 0, null)
+      that.shiftCursors(index, 0, null)
       length = op.retain
     }
     index += length
