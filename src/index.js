@@ -22,4 +22,4 @@ quill.register(DataElement, true)
 quill.register(CapsElement, true)
 quill.register(TypeElement, true)
 
-module.exports.Quill = quill;
+module.exports.Quill = quill
