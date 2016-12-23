@@ -8,7 +8,6 @@ var MultiCursor = function (quill, options) {
   this.options = Object.assign({}, DEFAULTS, options)
   this.container = quill.addContainer('ql-multi-cursor')
   this.cursors = {}
-  quill.on('text-change', this.applyDelta.bind(this))
 }
 
 MultiCursor.prototype.clearCursors = function () {
@@ -52,54 +51,6 @@ MultiCursor.prototype.setCursor = function (userId, index, name, color) {
     this.moveCursor(userId, index)
   }, 1)
   return this.cursors[userId]
-}
-
-MultiCursor.prototype.shiftCursors = function (index, length, authorId) {
-  authorId = authorId || null
-  Object.keys(this.cursors).forEach((cursorKey) => {
-    var cursor = this.cursors[cursorKey]
-    var shift = Math.max(length, index - cursor.index)
-    if (cursor.userId === authorId) {
-      this.moveCursor(authorId, cursor.index + shift)
-    } else if (cursor.index > index) {
-      cursor.index += shift
-    }
-  })
-
-  // Object.values(this.cursors).forEach((cursor) => {
-  //   var shift = Math.max(length, index - cursor.index);
-  //   if(cursor.userId == authorId) {
-  //     this.moveCursor(authorId, cursor.index + shift);
-  //   } else if(cursor.index > index) {
-  //     cursor.index += shift;
-  //   }
-  // });
-}
-
-MultiCursor.prototype.update = function () {
-  Object.keys(this.cursors).forEach((cursorKey) => {
-    this.updateCursor(this.cursors[cursorKey])
-  })
-  // Object.values(this.cursors).forEach(this.updateCursor.bind(this));
-}
-
-MultiCursor.prototype.applyDelta = function (delta) {
-  var index = 0
-  delta.ops.forEach((op) => {
-    var length = 0
-    if (op.insert) {
-      length = op.insert.length || 1
-      var author = op.attributes ? op.attributes.author : null
-      this.shiftCursors(index, length, author)
-    } else if (op.delete) {
-      this.shiftCursors(index, -1 * op.delete, null)
-    } else if (op.retain) {
-      this.shiftCursors(index, 0, null)
-      length = op.retain
-    }
-    index += length
-  })
-  this.update()
 }
 
 MultiCursor.prototype.buildCursor = function (name, color) {
