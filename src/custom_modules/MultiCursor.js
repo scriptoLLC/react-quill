@@ -8,7 +8,6 @@ var MultiCursor = function (quill, options) {
   this.options = Object.assign({}, DEFAULTS, options)
   this.container = quill.addContainer('ql-multi-cursor')
   this.cursors = {}
-  quill.on('text-change', this.applyDelta.bind(this))
 }
 
 MultiCursor.prototype.clearCursors = function () {
@@ -54,54 +53,6 @@ MultiCursor.prototype.setCursor = function (userId, index, name, color) {
   return this.cursors[userId]
 }
 
-MultiCursor.prototype.shiftCursors = function (index, length, authorId) {
-  authorId = authorId || null
-  Object.keys(this.cursors).forEach((cursorKey) => {
-    var cursor = this.cursors[cursorKey]
-    var shift = Math.max(length, index - cursor.index)
-    if (cursor.userId === authorId) {
-      this.moveCursor(authorId, cursor.index + shift)
-    } else if (cursor.index > index) {
-      cursor.index += shift
-    }
-  })
-
-  // Object.values(this.cursors).forEach((cursor) => {
-  //   var shift = Math.max(length, index - cursor.index);
-  //   if(cursor.userId == authorId) {
-  //     this.moveCursor(authorId, cursor.index + shift);
-  //   } else if(cursor.index > index) {
-  //     cursor.index += shift;
-  //   }
-  // });
-}
-
-MultiCursor.prototype.update = function () {
-  Object.keys(this.cursors).forEach((cursorKey) => {
-    this.updateCursor(this.cursors[cursorKey])
-  })
-  // Object.values(this.cursors).forEach(this.updateCursor.bind(this));
-}
-
-MultiCursor.prototype.applyDelta = function (delta) {
-  var index = 0
-  delta.ops.forEach((op) => {
-    var length = 0
-    if (op.insert) {
-      length = op.insert.length || 1
-      var author = op.attributes ? op.attributes.author : null
-      this.shiftCursors(index, length, author)
-    } else if (op.delete) {
-      this.shiftCursors(index, -1 * op.delete, null)
-    } else if (op.retain) {
-      this.shiftCursors(index, 0, null)
-      length = op.retain
-    }
-    index += length
-  })
-  this.update()
-}
-
 MultiCursor.prototype.buildCursor = function (name, color) {
   var cursorEl = document.createElement('span')
   cursorEl.classList.add('ql-cursor')
@@ -117,9 +68,22 @@ MultiCursor.prototype.buildCursor = function (name, color) {
 
 MultiCursor.prototype.updateCursor = function (cursor) {
   var bounds = this.quill.getBounds(cursor.index)
+
+  // MEMO : This is due to quill.js bug. When cursor is at the new line or
+  //        the end of the line, quill's `getBound` can not return correct 
+  //        cursor position. Somewhat correct cursor position can be retrieved
+  //        if we getBound for the previous index.
+  var newLine = false
+  if (this.quill.getText(cursor.index, 1) === '\n' || this.quill.getText(cursor.index - 1, 1) === '\n') {
+    bounds = this.quill.getBounds(cursor.index - 1)
+    newLine = true
+  }
+
   if (bounds) {
     cursor.elem.style.top = (bounds.top + this.quill.container.scrollTop) + 'px'
-    cursor.elem.style.left = bounds.left + 'px'
+    // WARNING SUPER HACKY (SORRY!)
+    // If getBound was done with previous index, off set that by 5px
+    cursor.elem.style.left = bounds.left + (newLine ? 5 : 0) + 'px'
     cursor.elem.style.height = bounds.height + 'px'
     var flag = cursor.elem.querySelector('.ql-cursor-flag')
     cursor.elem.classList.toggle('ql-top', parseInt(cursor.elem.style.top) <= flag.offsetHeight)
