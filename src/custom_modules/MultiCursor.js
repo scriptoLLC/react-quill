@@ -68,9 +68,14 @@ MultiCursor.prototype.buildCursor = function (name, color) {
 
 MultiCursor.prototype.updateCursor = function (cursor) {
   var bounds = this.quill.getBounds(cursor.index)
+  var newLine = false
+  if (this.quill.getText(cursor.index, 1) === '\n' || this.quill.getText(cursor.index - 1, 1) === '\n') {
+    bounds = this.quill.getBounds(cursor.index - 1)
+    newLine = true
+  }
   if (bounds) {
     cursor.elem.style.top = (bounds.top + this.quill.container.scrollTop) + 'px'
-    cursor.elem.style.left = bounds.left + 'px'
+    cursor.elem.style.left = bounds.left + (newLine ? 5 : 0) + 'px'
     cursor.elem.style.height = bounds.height + 'px'
     var flag = cursor.elem.querySelector('.ql-cursor-flag')
     cursor.elem.classList.toggle('ql-top', parseInt(cursor.elem.style.top) <= flag.offsetHeight)
